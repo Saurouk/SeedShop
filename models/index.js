@@ -30,6 +30,7 @@ db.sequelize = sequelize;
 
 // Charger les modèles
 db.User = require('./user.model')(sequelize, DataTypes);
+db.Product = require('./product.model')(sequelize, DataTypes); // ⬅️ Ajouté ici
 
 // Synchroniser les tables
 db.sequelize.sync({ alter: true }).then(() => {
