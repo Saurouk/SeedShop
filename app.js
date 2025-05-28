@@ -1,16 +1,25 @@
-// On importe Express
+// Charger les variables d'environnement depuis .env
+require('dotenv').config();
+
+// Importer Sequelize + modèles
+const db = require('./models');
+
 const express = require('express');
-
-// initialise l'application
 const app = express();
-
-// Définir le port sur lequel le serveur va écouter
 const PORT = 3000;
 
-// Middleware pour lire les requêtes en JSON
+// Middleware pour lire les requêtes JSON
 app.use(express.json());
 
-// Route d'accueil : http://localhost:3000
+// Importer les routes
+const productRoutes = require('./routes/product.routes');
+const userRoutes = require('./routes/user.routes');
+
+// Utiliser les routes
+app.use('/products', productRoutes);
+app.use('/users', userRoutes);
+
+// Route d’accueil
 app.get('/', (req, res) => {
   res.send('Bienvenue sur SeedShop API !');
 });
