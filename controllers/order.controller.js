@@ -1,3 +1,4 @@
+const PDFDocument = require('pdfkit');
 const db = require('../models');
 const Order = db.Order;
 const OrderItem = db.OrderItem;
@@ -66,5 +67,57 @@ exports.getUserOrders = async (req, res) => {
   } catch (error) {
     console.error('Erreur récupération commandes :', error);
     res.status(500).json({ message: "Erreur lors de la récupération des commandes." });
+  }
+};
+
+// Générer et envoyer la facture PDF pour une commande
+exports.downloadInvoice = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const orderId = req.params.id;
+
+    // Récupérer la commande et ses items
+    const order = await Order.findOne({
+      where: { id: orderId, userId },
+      include: {
+        model: OrderItem,
+        as: 'items',
+        include: { model: Product, as: 'product' }
+      }
+    });
+
+    if (!order) {
+      return res.status(404).json({ message: 'Commande introuvable.' });
+    }
+
+    const PDFDocument = require('pdfkit');
+    const doc = new PDFDocument();
+
+    res.setHeader('Content-Disposition', `attachment; filename=Facture_Commande_${orderId}.pdf`);
+    res.setHeader('Content-Type', 'application/pdf');
+
+    doc.pipe(res);
+
+    doc.fontSize(20).text('Facture de commande', { align: 'center' });
+    doc.moveDown();
+
+    doc.fontSize(12).text(`Commande n°: ${order.id}`);
+    doc.text(`Date: ${order.createdAt.toLocaleDateString()}`);
+    doc.text(`Statut: ${order.status}`);
+    doc.text(`Client ID: ${order.userId}`);
+    doc.moveDown();
+
+    doc.text('Produits :');
+    order.items.forEach(item => {
+      doc.text(`- ${item.product.name} x${item.quantity} @ ${item.priceAtPurchase.toFixed(2)} € = ${(item.priceAtPurchase * item.quantity).toFixed(2)} €`);
+    });
+
+    doc.moveDown();
+    doc.fontSize(14).text(`Total : ${order.totalPrice.toFixed(2)} €`, { align: 'right' });
+
+    doc.end();
+  } catch (error) {
+    console.error('Erreur génération facture :', error);
+    res.status(500).json({ message: 'Erreur lors de la génération de la facture.' });
   }
 };

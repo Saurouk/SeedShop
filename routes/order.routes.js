@@ -9,4 +9,7 @@ router.post('/', auth, orderController.createOrder);
 // Récupérer toutes les commandes de l'utilisateur connecté
 router.get('/', auth, orderController.getUserOrders);
 
+// Télécharger la facture PDF d'une commande
+router.get('/:id/invoice', auth, orderController.downloadInvoice);
+
 module.exports = router;
