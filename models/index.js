@@ -34,7 +34,9 @@ db.Category = require('./category.model')(sequelize, DataTypes);
 db.Product = require('./product.model')(sequelize, DataTypes);
 
 // Appliquer les associations
-if (db.Product.associate) db.Product.associate(db);
+if (db.Product.associate) {
+  db.Product.associate(db);
+}
 
 // Synchroniser les tables
 db.sequelize.sync({ alter: true }).then(() => {

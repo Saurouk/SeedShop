@@ -1,8 +1,9 @@
 const db = require('../models');
 const Product = db.Product;
+const Category = db.Category;
 const { Op } = require('sequelize');
 
-// Obtenir la liste des produits (avec recherche et tri)
+// Obtenir la liste des produits (recherche, tri, catégorie)
 exports.getAllProducts = async (req, res) => {
   try {
     const { sort, category, q } = req.query;
@@ -10,7 +11,7 @@ exports.getAllProducts = async (req, res) => {
     const where = {};
     const order = [];
 
-    // Recherche par mot-clé dans le nom ou la description
+    // Recherche dans le nom ou la description
     if (q) {
       where[Op.or] = [
         { name: { [Op.like]: `%${q}%` } },
@@ -18,9 +19,9 @@ exports.getAllProducts = async (req, res) => {
       ];
     }
 
-    // Filtrage par catégorie (exact match)
+    // Filtrage par ID de catégorie
     if (category) {
-      where.category = category;
+      where.categoryId = category;
     }
 
     // Tri par prix
@@ -33,6 +34,11 @@ exports.getAllProducts = async (req, res) => {
     const products = await Product.findAll({
       where,
       order,
+      include: {
+        model: Category,
+        as: 'category',
+        attributes: ['id', 'name'],
+      },
     });
 
     res.status(200).json(products);
@@ -49,22 +55,30 @@ exports.createProduct = async (req, res) => {
       name,
       description,
       quantity,
-      category,
+      categoryId,
       symbol,
       image,
       gallery,
-      stockThreshold
+      stockThreshold,
+      price,
     } = req.body;
+
+    // Vérifier si la catégorie existe
+    const category = await Category.findByPk(categoryId);
+    if (!category) {
+      return res.status(404).json({ message: "Catégorie introuvable." });
+    }
 
     const product = await Product.create({
       name,
       description,
       quantity,
-      category,
+      categoryId,
       symbol,
       image,
       gallery,
-      stockThreshold
+      stockThreshold,
+      price,
     });
 
     res.status(201).json({
