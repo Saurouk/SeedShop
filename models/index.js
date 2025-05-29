@@ -37,6 +37,8 @@ db.Comment = require('./comment.model')(sequelize, DataTypes);
 db.Like = require('./like.model')(sequelize, DataTypes);
 db.Report = require('./report.model')(sequelize, DataTypes); // ✅ ajout du modèle Report
 db.Cart = require('./cart.model')(sequelize, DataTypes); // ✅ ajout du modèle Cart
+db.Order = require('./order.model')(sequelize, DataTypes); // ✅ ajout du modèle Order
+db.OrderItem = require('./orderItem.model')(sequelize, DataTypes); // ✅ ajout du modèle OrderItem
 
 // Appliquer les associations
 if (db.Product.associate) db.Product.associate(db);
@@ -45,6 +47,8 @@ if (db.Comment.associate) db.Comment.associate(db);
 if (db.Like.associate) db.Like.associate(db);
 if (db.Report.associate) db.Report.associate(db); // ✅ association Report → User, Blog, Comment
 if (db.Cart.associate) db.Cart.associate(db); // ✅ association Cart → User, Product
+if (db.Order.associate) db.Order.associate(db); // ✅ association Order → User, OrderItem
+if (db.OrderItem.associate) db.OrderItem.associate(db); // ✅ association OrderItem → Order, Product
 
 // Synchroniser les tables
 db.sequelize.sync({ alter: true }).then(() => {
