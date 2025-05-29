@@ -15,13 +15,15 @@ app.use(express.json());
 const productRoutes = require('./routes/product.routes');
 const userRoutes = require('./routes/user.routes');
 const categoryRoutes = require('./routes/category.routes');
-const blogRoutes = require('./routes/blog.routes'); 
+const blogRoutes = require('./routes/blog.routes');
+const commentRoutes = require('./routes/comment.routes'); // ✅ ajouté
 
 // Utiliser les routes
 app.use('/products', productRoutes);
 app.use('/users', userRoutes);
 app.use('/categories', categoryRoutes);
-app.use('/blogs', blogRoutes); // 
+app.use('/blogs', blogRoutes);
+app.use(commentRoutes); // ✅ ajouté pour les commentaires
 
 // Route d’accueil
 app.get('/', (req, res) => {
