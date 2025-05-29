@@ -1,4 +1,3 @@
-// controllers/blog.controller.js
 const db = require('../models');
 const Blog = db.Blog;
 
@@ -72,5 +71,48 @@ exports.publishBlog = async (req, res) => {
   } catch (error) {
     console.error("Erreur publication article :", error);
     res.status(500).json({ message: "Erreur lors de la publication." });
+  }
+};
+
+// Modifier un article (admin uniquement)
+exports.updateBlog = async (req, res) => {
+  const blogId = req.params.id;
+  const { title, content, category } = req.body;
+
+  try {
+    const blog = await Blog.findByPk(blogId);
+    if (!blog) {
+      return res.status(404).json({ message: "Article introuvable." });
+    }
+
+    blog.title = title ?? blog.title;
+    blog.content = content ?? blog.content;
+    blog.category = category ?? blog.category;
+
+    await blog.save();
+
+    res.status(200).json({ message: "Article mis à jour avec succès.", blog });
+  } catch (error) {
+    console.error("Erreur mise à jour article :", error);
+    res.status(500).json({ message: "Erreur lors de la mise à jour." });
+  }
+};
+
+// Supprimer un article (admin uniquement)
+exports.deleteBlog = async (req, res) => {
+  const blogId = req.params.id;
+
+  try {
+    const blog = await Blog.findByPk(blogId);
+    if (!blog) {
+      return res.status(404).json({ message: "Article introuvable." });
+    }
+
+    await blog.destroy();
+
+    res.status(200).json({ message: "Article supprimé avec succès." });
+  } catch (error) {
+    console.error("Erreur suppression article :", error);
+    res.status(500).json({ message: "Erreur lors de la suppression." });
   }
 };
