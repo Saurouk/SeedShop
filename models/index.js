@@ -30,7 +30,11 @@ db.sequelize = sequelize;
 
 // Charger les modèles
 db.User = require('./user.model')(sequelize, DataTypes);
-db.Product = require('./product.model')(sequelize, DataTypes); // ⬅️ Ajouté ici
+db.Category = require('./category.model')(sequelize, DataTypes);
+db.Product = require('./product.model')(sequelize, DataTypes);
+
+// Appliquer les associations
+if (db.Product.associate) db.Product.associate(db);
 
 // Synchroniser les tables
 db.sequelize.sync({ alter: true }).then(() => {

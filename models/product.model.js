@@ -12,10 +12,6 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       defaultValue: 0,
     },
-    category: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
     symbol: {
       type: DataTypes.ENUM('kg', 'pièce', 'litre'),
       allowNull: false,
@@ -38,6 +34,17 @@ module.exports = (sequelize, DataTypes) => {
     tableName: 'products',
     timestamps: true,
   });
+
+  // Association avec Category
+  Product.associate = (models) => {
+    Product.belongsTo(models.Category, {
+      foreignKey: {
+        name: 'categoryId',
+        allowNull: false,
+      },
+      as: 'category',
+    });
+  };
 
   return Product;
 };
