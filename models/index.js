@@ -22,35 +22,37 @@ sequelize.authenticate()
     console.error('Erreur de connexion à la base :', err);
   });
 
-// Initialiser l'objet db
+// Objet contenant tous les modèles
 const db = {};
 
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
-// Charger les modèles
-db.User = require('./user.model')(sequelize, DataTypes);
-db.Category = require('./category.model')(sequelize, DataTypes);
-db.Product = require('./product.model')(sequelize, DataTypes);
-db.Blog = require('./blog.model')(sequelize, DataTypes);
-db.Comment = require('./comment.model')(sequelize, DataTypes);
-db.Like = require('./like.model')(sequelize, DataTypes);
-db.Report = require('./report.model')(sequelize, DataTypes); // ✅ ajout du modèle Report
-db.Cart = require('./cart.model')(sequelize, DataTypes); // ✅ ajout du modèle Cart
-db.Order = require('./order.model')(sequelize, DataTypes); // ✅ ajout du modèle Order
-db.OrderItem = require('./orderItem.model')(sequelize, DataTypes); // ✅ ajout du modèle OrderItem
+/* ====== Chargement des modèles ====== */
+db.User       = require('./user.model')(sequelize, DataTypes);
+db.Category   = require('./category.model')(sequelize, DataTypes);
+db.Product    = require('./product.model')(sequelize, DataTypes);
+db.Blog       = require('./blog.model')(sequelize, DataTypes);
+db.Comment    = require('./comment.model')(sequelize, DataTypes);
+db.Like       = require('./like.model')(sequelize, DataTypes);
+db.Report     = require('./report.model')(sequelize, DataTypes);
+db.Cart       = require('./cart.model')(sequelize, DataTypes);
+db.Order      = require('./order.model')(sequelize, DataTypes);
+db.OrderItem  = require('./orderItem.model')(sequelize, DataTypes);
+db.Wishlist   = require('./wishlist.model')(sequelize, DataTypes);   
 
-// Appliquer les associations
-if (db.Product.associate) db.Product.associate(db);
-if (db.Blog.associate) db.Blog.associate(db);
-if (db.Comment.associate) db.Comment.associate(db);
-if (db.Like.associate) db.Like.associate(db);
-if (db.Report.associate) db.Report.associate(db); // ✅ association Report → User, Blog, Comment
-if (db.Cart.associate) db.Cart.associate(db); // ✅ association Cart → User, Product
-if (db.Order.associate) db.Order.associate(db); // ✅ association Order → User, OrderItem
-if (db.OrderItem.associate) db.OrderItem.associate(db); // ✅ association OrderItem → Order, Product
+/* ====== Appliquer les associations ====== */
+if (db.Product.associate)   db.Product.associate(db);
+if (db.Blog.associate)      db.Blog.associate(db);
+if (db.Comment.associate)   db.Comment.associate(db);
+if (db.Like.associate)      db.Like.associate(db);
+if (db.Report.associate)    db.Report.associate(db);
+if (db.Cart.associate)      db.Cart.associate(db);
+if (db.Order.associate)     db.Order.associate(db);
+if (db.OrderItem.associate) db.OrderItem.associate(db);
+if (db.Wishlist.associate)  db.Wishlist.associate(db);              // ✅ association Wishlist
 
-// Synchroniser les tables
+/* ====== Synchronisation ====== */
 db.sequelize.sync({ alter: true }).then(() => {
   console.log('Modèles synchronisés avec la base de données.');
 });
