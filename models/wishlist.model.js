@@ -2,14 +2,14 @@
 module.exports = (sequelize, DataTypes) => {
   const Wishlist = sequelize.define('Wishlist', {}, {
     tableName: 'wishlists',
-    timestamps: true,          
+    timestamps: true,
     indexes: [
-      { unique: true, fields: ['userId', 'productId'] } // empêche les doublons
+      { unique: true, fields: ['userId', 'productId'], name: 'wishlist_unique_user_product' },
     ],
   });
 
-  // Associations Many-to-Many User ⇄ Product via Wishlist
   Wishlist.associate = (models) => {
+    // Many-to-Many côté User / Product
     models.User.belongsToMany(models.Product, {
       through: Wishlist,
       foreignKey: 'userId',
@@ -23,6 +23,10 @@ module.exports = (sequelize, DataTypes) => {
       otherKey: 'userId',
       as: 'wishlistedBy',
     });
+
+    // ✅ Associations directes pour les include
+    Wishlist.belongsTo(models.User,    { foreignKey: 'userId',    as: 'user'    });
+    Wishlist.belongsTo(models.Product, { foreignKey: 'productId', as: 'product' });
   };
 
   return Wishlist;
