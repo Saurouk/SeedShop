@@ -1,6 +1,7 @@
 const db = require('../models');
 const Cart = db.Cart;
 const Product = db.Product;
+const Category = db.Category;  // Import ajouté ici
 
 exports.getUserCart = async (req, res) => {
   try {
@@ -11,7 +12,12 @@ exports.getUserCart = async (req, res) => {
       include: {
         model: Product,
         as: 'product',
-        attributes: ['id', 'name', 'category', 'price', 'symbol'],
+        attributes: ['id', 'name', 'price', 'symbol'],
+        include: {
+          model: Category,
+          as: 'category',
+          attributes: ['id', 'name'],
+        },
       },
     });
 
