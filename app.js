@@ -18,6 +18,7 @@ const categoryRoutes = require('./routes/category.routes');
 const blogRoutes = require('./routes/blog.routes');
 const commentRoutes = require('./routes/comment.routes');
 const likeRoutes = require('./routes/like.routes'); // ✅ ajout des routes Like
+const reportRoutes = require('./routes/report.routes'); // ✅ ajout des routes Report
 
 // Utiliser les routes
 app.use('/products', productRoutes);
@@ -25,7 +26,8 @@ app.use('/users', userRoutes);
 app.use('/categories', categoryRoutes);
 app.use('/blogs', blogRoutes);
 app.use(commentRoutes);
-app.use(likeRoutes); // ✅ ajouté pour les likes
+app.use(likeRoutes);
+app.use(reportRoutes); // ✅ ajouté pour les signalements
 
 // Route d’accueil
 app.get('/', (req, res) => {
