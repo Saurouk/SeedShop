@@ -1,3 +1,5 @@
+// models/blog.model.js
+
 module.exports = (sequelize, DataTypes) => {
   const Blog = sequelize.define('Blog', {
     title: {
@@ -25,7 +27,7 @@ module.exports = (sequelize, DataTypes) => {
     timestamps: true,
   });
 
-  // Association avec User (auteur)
+  // Association avec User (auteur de l’article)
   Blog.associate = (models) => {
     Blog.belongsTo(models.User, {
       foreignKey: {
