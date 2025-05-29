@@ -26,6 +26,10 @@ module.exports = (sequelize, DataTypes) => {
     gallery: {
       type: DataTypes.JSON,
     },
+    price: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+    },
     stockThreshold: {
       type: DataTypes.INTEGER,
       defaultValue: 5,

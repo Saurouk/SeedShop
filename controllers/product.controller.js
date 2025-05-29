@@ -1,22 +1,51 @@
 const db = require('../models');
 const Product = db.Product;
+const { Op } = require('sequelize');
 
-// GET /products
+// Obtenir la liste des produits (avec recherche et tri)
 exports.getAllProducts = async (req, res) => {
   try {
-    const products = await Product.findAll();
-    res.json(products);
-  } catch (err) {
-    res.status(500).json({ message: 'Erreur lors du chargement des produits.' });
+    const { sort, category, q } = req.query;
+
+    const where = {};
+    const order = [];
+
+    // Recherche par mot-clé dans le nom ou la description
+    if (q) {
+      where[Op.or] = [
+        { name: { [Op.like]: `%${q}%` } },
+        { description: { [Op.like]: `%${q}%` } }
+      ];
+    }
+
+    // Filtrage par catégorie (exact match)
+    if (category) {
+      where.category = category;
+    }
+
+    // Tri par prix
+    if (sort === 'price_asc') {
+      order.push(['price', 'ASC']);
+    } else if (sort === 'price_desc') {
+      order.push(['price', 'DESC']);
+    }
+
+    const products = await Product.findAll({
+      where,
+      order,
+    });
+
+    res.status(200).json(products);
+  } catch (error) {
+    console.error("Erreur lors de la récupération des produits :", error);
+    res.status(500).json({ message: "Erreur lors de la récupération des produits." });
   }
 };
 
-// POST /products/create
+// Création de produit (admin/superuser uniquement)
 exports.createProduct = async (req, res) => {
-  const { name, description, quantity, category, symbol, image, gallery, stockThreshold } = req.body;
-
   try {
-    const newProduct = await Product.create({
+    const {
       name,
       description,
       quantity,
@@ -24,12 +53,26 @@ exports.createProduct = async (req, res) => {
       symbol,
       image,
       gallery,
-      stockThreshold,
+      stockThreshold
+    } = req.body;
+
+    const product = await Product.create({
+      name,
+      description,
+      quantity,
+      category,
+      symbol,
+      image,
+      gallery,
+      stockThreshold
     });
 
-    res.status(201).json({ message: 'Produit créé avec succès.', product: newProduct });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Erreur lors de la création du produit.' });
+    res.status(201).json({
+      message: 'Produit créé avec succès.',
+      product
+    });
+  } catch (error) {
+    console.error("Erreur lors de la création du produit :", error);
+    res.status(500).json({ message: "Erreur lors de la création du produit." });
   }
 };
