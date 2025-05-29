@@ -1,7 +1,7 @@
 const db = require('../models');
 const Cart = db.Cart;
 const Product = db.Product;
-const Category = db.Category;  // Import ajouté ici
+const Category = db.Category;  
 
 exports.getUserCart = async (req, res) => {
   try {
