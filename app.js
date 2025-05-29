@@ -8,6 +8,9 @@ const express = require('express');
 const app = express();
 const PORT = 3000;
 
+// Importer la tâche cron
+const statusUpdater = require('./cron/statusUpdater');
+
 // Middleware pour lire les requêtes JSON
 app.use(express.json());
 
@@ -32,6 +35,9 @@ app.use(likeRoutes);
 app.use(reportRoutes); // ✅ ajouté pour les signalements
 app.use(cartRoutes); // ✅ ajouté pour le panier
 app.use('/orders', orderRoutes); // ✅ ajouté pour les commandes
+
+// Démarrer la tâche cron au lancement du serveur
+statusUpdater.start();
 
 // Route d’accueil
 app.get('/', (req, res) => {

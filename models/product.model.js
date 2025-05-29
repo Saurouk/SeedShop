@@ -25,6 +25,9 @@ module.exports = (sequelize, DataTypes) => {
     price: {
       type: DataTypes.FLOAT,
       allowNull: false,
+      validate: {
+        min: 0.01,  // Prix minimum strictement supérieur à 0
+      },
     },
     stockThreshold: {
       type: DataTypes.INTEGER,

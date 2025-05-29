@@ -70,13 +70,11 @@ exports.getUserOrders = async (req, res) => {
   }
 };
 
-// Générer et envoyer la facture PDF pour une commande
 exports.downloadInvoice = async (req, res) => {
   try {
     const userId = req.user.id;
     const orderId = req.params.id;
 
-    // Récupérer la commande et ses items
     const order = await Order.findOne({
       where: { id: orderId, userId },
       include: {
@@ -90,7 +88,6 @@ exports.downloadInvoice = async (req, res) => {
       return res.status(404).json({ message: 'Commande introuvable.' });
     }
 
-    const PDFDocument = require('pdfkit');
     const doc = new PDFDocument();
 
     res.setHeader('Content-Disposition', `attachment; filename=Facture_Commande_${orderId}.pdf`);
@@ -119,5 +116,31 @@ exports.downloadInvoice = async (req, res) => {
   } catch (error) {
     console.error('Erreur génération facture :', error);
     res.status(500).json({ message: 'Erreur lors de la génération de la facture.' });
+  }
+};
+
+exports.cancelOrder = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const orderId = req.params.id;
+
+    const order = await Order.findOne({ where: { id: orderId, userId } });
+
+    if (!order) {
+      return res.status(404).json({ message: "Commande introuvable." });
+    }
+
+    const allowedStatuses = ['en attente', 'confirmée', 'préparation'];
+    if (!allowedStatuses.includes(order.status)) {
+      return res.status(400).json({ message: "Commande non annulable à ce stade." });
+    }
+
+    order.status = 'annulée';
+    await order.save();
+
+    res.status(200).json({ message: "Commande annulée avec succès.", order });
+  } catch (error) {
+    console.error('Erreur annulation commande :', error);
+    res.status(500).json({ message: "Erreur lors de l'annulation de la commande." });
   }
 };

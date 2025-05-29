@@ -12,4 +12,7 @@ router.get('/', auth, orderController.getUserOrders);
 // Télécharger la facture PDF d'une commande
 router.get('/:id/invoice', auth, orderController.downloadInvoice);
 
+// Annuler une commande avant expédition (user connecté)
+router.put('/:id/cancel', auth, orderController.cancelOrder);
+
 module.exports = router;
