@@ -32,11 +32,13 @@ db.sequelize = sequelize;
 db.User = require('./user.model')(sequelize, DataTypes);
 db.Category = require('./category.model')(sequelize, DataTypes);
 db.Product = require('./product.model')(sequelize, DataTypes);
-db.Blog = require('./blog.model')(sequelize, DataTypes); // ✅ ajout du modèle Blog
+db.Blog = require('./blog.model')(sequelize, DataTypes);
+db.Comment = require('./comment.model')(sequelize, DataTypes); // ✅ ajout du modèle Comment
 
 // Appliquer les associations
 if (db.Product.associate) db.Product.associate(db);
-if (db.Blog.associate) db.Blog.associate(db); // ✅ appliquer l'association Blog → User
+if (db.Blog.associate) db.Blog.associate(db);
+if (db.Comment.associate) db.Comment.associate(db); // ✅ association Comment → User & Blog
 
 // Synchroniser les tables
 db.sequelize.sync({ alter: true }).then(() => {
