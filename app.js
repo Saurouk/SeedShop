@@ -14,12 +14,12 @@ app.use(express.json());
 // Importer les routes
 const productRoutes = require('./routes/product.routes');
 const userRoutes = require('./routes/user.routes');
-const categoryRoutes = require('./routes/category.routes'); // ✅ ajout
+const categoryRoutes = require('./routes/category.routes'); // ✅ Ajout des routes catégories
 
 // Utiliser les routes
 app.use('/products', productRoutes);
 app.use('/users', userRoutes);
-app.use('/categories', categoryRoutes); // ✅ ajout
+app.use('/categories', categoryRoutes); // ✅ Ajout route catégorie
 
 // Route d’accueil
 app.get('/', (req, res) => {

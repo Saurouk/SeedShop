@@ -3,7 +3,7 @@ const Product = db.Product;
 const Category = db.Category;
 const { Op } = require('sequelize');
 
-// Obtenir la liste des produits (recherche, tri, catégorie)
+// Obtenir la liste des produits (recherche, tri, filtre par nom de catégorie)
 exports.getAllProducts = async (req, res) => {
   try {
     const { sort, category, q } = req.query;
@@ -19,11 +19,6 @@ exports.getAllProducts = async (req, res) => {
       ];
     }
 
-    // Filtrage par ID de catégorie
-    if (category) {
-      where.categoryId = category;
-    }
-
     // Tri par prix
     if (sort === 'price_asc') {
       order.push(['price', 'ASC']);
@@ -31,14 +26,22 @@ exports.getAllProducts = async (req, res) => {
       order.push(['price', 'DESC']);
     }
 
+    // Préparation de l'inclusion de la catégorie
+    const include = {
+      model: Category,
+      as: 'category',
+      attributes: ['id', 'name'],
+    };
+
+    // Si un nom de catégorie est fourni, ajouter une condition
+    if (category) {
+      include.where = { name: category };
+    }
+
     const products = await Product.findAll({
       where,
       order,
-      include: {
-        model: Category,
-        as: 'category',
-        attributes: ['id', 'name'],
-      },
+      include
     });
 
     res.status(200).json(products);
