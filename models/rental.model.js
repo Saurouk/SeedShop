@@ -5,7 +5,7 @@ module.exports = (sequelize, DataTypes) => {
     endDate:    { type: DataTypes.DATEONLY, allowNull: false },
     status:     { type: DataTypes.ENUM('en_cours', 'terminée', 'retard'), defaultValue: 'en_cours' },
     lateFee:    { type: DataTypes.FLOAT, defaultValue: 0 },
-    quantityBeforeRental: { type: DataTypes.INTEGER, allowNull: true }, // ✅ champ ajouté
+    quantityBeforeRental: { type: DataTypes.INTEGER, allowNull: true }, 
   }, {
     tableName: 'rentals',
     timestamps: true,
