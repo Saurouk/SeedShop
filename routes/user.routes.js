@@ -15,6 +15,9 @@ router.get('/profile', auth, (req, res) => {
   });
 });
 
+// 🔄 S'abonner / se désabonner de la newsletter
+router.put('/newsletter/toggle', auth, userController.toggleNewsletter);
+
 // 🔧 Route TEMPORAIRE pour créer un admin/superuser
 const db = require('../models');
 const bcrypt = require('bcrypt');

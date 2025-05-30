@@ -1,3 +1,4 @@
+// models/user.model.js
 module.exports = (sequelize, DataTypes) => {
   const User = sequelize.define('User', {
     username: {
@@ -9,7 +10,7 @@ module.exports = (sequelize, DataTypes) => {
     email: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: { name: 'users_email_unique' },  // ← nom d’index explicite
+      unique: { name: 'users_email_unique' },
       validate: { isEmail: true },
     },
 
@@ -20,8 +21,13 @@ module.exports = (sequelize, DataTypes) => {
 
     role: {
       type: DataTypes.ENUM('user', 'superuser', 'admin'),
-      defaultValue: 'user',  // ← si aucun rôle n'est fourni
+      defaultValue: 'user',
     },
+
+    newsletterOptIn: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    }
   }, {
     tableName: 'users',
     timestamps: true,

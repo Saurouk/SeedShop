@@ -28,6 +28,7 @@ const wishlistRoutes      = require('./routes/wishlist.routes');
 const rentalRoutes        = require('./routes/rental.routes');       // ✅ Location
 const rentalOrderRoutes   = require('./routes/rentalOrder.routes');  // ✅ LocationOrder
 const testRoutes          = require('./routes/test.routes');         // ✅ Test notifications
+const newsletterRoutes    = require('./routes/newsletter.routes');   // ✅ Newsletter
 
 /* ===== Montage des routes avec préfixes clairs ===== */
 app.use('/products',      productRoutes);
@@ -43,6 +44,7 @@ app.use('/wishlist',      wishlistRoutes);
 app.use('/rentals',       rentalRoutes);         // ✅ Individuelle
 app.use('/rental-orders', rentalOrderRoutes);    // ✅ Groupée
 app.use('/test',          testRoutes);           // ✅ Notifications de test
+app.use('/newsletters',   newsletterRoutes);     // ✅ Newsletter
 
 /* ===== Tâches Cron ===== */
 statusUpdater.start(); // ✅ Inclut update + notification de rappel
