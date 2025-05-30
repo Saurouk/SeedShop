@@ -5,7 +5,7 @@ const User = db.User;
 
 // Inscription utilisateur
 exports.register = async (req, res) => {
-  const { username, email, password } = req.body;
+  const { username, email, password, role } = req.body;
 
   try {
     // Vérifie si l'email est déjà utilisé
@@ -17,12 +17,16 @@ exports.register = async (req, res) => {
     // Hash du mot de passe
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Validation du rôle
+    const allowedRoles = ['user', 'admin', 'superuser'];
+    const assignedRole = allowedRoles.includes(role) ? role : 'user';
+
     // Création de l'utilisateur
     const user = await User.create({
       username,
       email,
       password: hashedPassword,
-      role: 'user' // valeur par défaut
+      role: assignedRole
     });
 
     res.status(201).json({ message: "Utilisateur inscrit avec succès.", user });
@@ -32,24 +36,21 @@ exports.register = async (req, res) => {
   }
 };
 
-// Connexion utilisateur
+// Connexion utilisateur (inchangé)
 exports.login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    // Vérifie si l'utilisateur existe
     const user = await User.findOne({ where: { email } });
     if (!user) {
       return res.status(401).json({ message: "Email ou mot de passe incorrect." });
     }
 
-    // Vérifie le mot de passe
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(401).json({ message: "Email ou mot de passe incorrect." });
     }
 
-    // Génère un token JWT
     const token = jwt.sign(
       { id: user.id, role: user.role },
       process.env.JWT_SECRET,
