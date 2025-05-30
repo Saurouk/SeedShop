@@ -8,7 +8,7 @@ const express = require('express');
 const app = express();
 const PORT = 3000;
 
-/* ===== Cron : mise à jour statuts commandes ===== */
+/* ===== Cron : mise à jour statuts commandes + rappels location ===== */
 const statusUpdater = require('./cron/statusUpdater');
 
 /* ===== Middleware ===== */
@@ -27,6 +27,7 @@ const orderRoutes         = require('./routes/order.routes');
 const wishlistRoutes      = require('./routes/wishlist.routes');
 const rentalRoutes        = require('./routes/rental.routes');       // ✅ Location
 const rentalOrderRoutes   = require('./routes/rentalOrder.routes');  // ✅ LocationOrder
+const testRoutes          = require('./routes/test.routes');         // ✅ Test notifications
 
 /* ===== Montage des routes avec préfixes clairs ===== */
 app.use('/products',      productRoutes);
@@ -41,9 +42,10 @@ app.use('/orders',        orderRoutes);
 app.use('/wishlist',      wishlistRoutes);
 app.use('/rentals',       rentalRoutes);         // ✅ Individuelle
 app.use('/rental-orders', rentalOrderRoutes);    // ✅ Groupée
+app.use('/test',          testRoutes);           // ✅ Notifications de test
 
-/* ===== Tâche Cron ===== */
-statusUpdater.start();
+/* ===== Tâches Cron ===== */
+statusUpdater.start(); // ✅ Inclut update + notification de rappel
 
 /* ===== Accueil ===== */
 app.get('/', (_req, res) => {
