@@ -72,3 +72,47 @@ exports.createRentalOrder = async (req, res) => {
     return res.status(500).json({ message: 'Erreur serveur lors de la commande de location.' });
   }
 };
+
+/* =========================================================================
+   Clôturer une commande de location (retour groupé) – PUT /rental-orders/:id/close
+   ========================================================================= */
+exports.closeRentalOrder = async (req, res) => {
+  const userId = req.user.id;
+  const orderId = req.params.id;
+
+  try {
+    const rentals = await Rental.findAll({
+      where: { userId, orderId, status: { [Op.ne]: 'terminée' } },
+      include: { model: Product, as: 'product' },
+    });
+
+    if (!rentals.length) {
+      return res.status(404).json({ message: "Aucune location active trouvée pour cette commande." });
+    }
+
+    const today = new Date();
+    const msInDay = 1000 * 60 * 60 * 24;
+    const coef = parseFloat(process.env.LATE_FEE_MULTIPLIER || 1.5);
+
+    for (const rental of rentals) {
+      const endDate = new Date(rental.endDate);
+      const lateDays = Math.max(0, Math.ceil((today - endDate) / msInDay));
+
+      if (lateDays > 0) {
+        rental.lateFee = lateDays * rental.product.dailyRate * rental.quantity * coef;
+        rental.status = 'retard';
+      } else {
+        rental.status = 'terminée';
+      }
+
+      rental.product.quantity += rental.quantity;
+      await rental.product.save();
+      await rental.save();
+    }
+
+    res.status(200).json({ message: "Commande de location clôturée avec succès.", orderId });
+  } catch (error) {
+    console.error("Erreur lors de la clôture de la commande :", error);
+    res.status(500).json({ message: "Erreur lors de la clôture de la commande." });
+  }
+};
