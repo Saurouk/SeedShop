@@ -116,3 +116,32 @@ exports.closeRentalOrder = async (req, res) => {
     res.status(500).json({ message: "Erreur lors de la clôture de la commande." });
   }
 };
+
+/* =========================================================================
+   Détail d’une commande de location – GET /rental-orders/:id
+   ========================================================================= */
+exports.getRentalOrderById = async (req, res) => {
+  const userId = req.user.id;
+  const orderId = req.params.id;
+
+  try {
+    const rentals = await Rental.findAll({
+      where: { userId, orderId },
+      include: {
+        model: Product,
+        as: 'product',
+        attributes: ['id', 'name', 'dailyRate']
+      },
+      order: [['startDate', 'ASC']]
+    });
+
+    if (!rentals.length) {
+      return res.status(404).json({ message: "Aucune location trouvée pour cette commande." });
+    }
+
+    res.status(200).json({ orderId, rentals });
+  } catch (error) {
+    console.error("Erreur récupération commande :", error);
+    res.status(500).json({ message: "Erreur lors de la récupération de la commande." });
+  }
+};

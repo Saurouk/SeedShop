@@ -12,8 +12,9 @@ module.exports = (sequelize, DataTypes) => {
   });
 
   Rental.associate = models => {
-    Rental.belongsTo(models.User,    { foreignKey: 'userId',    as: 'user' });
-    Rental.belongsTo(models.Product, { foreignKey: 'productId', as: 'product' });
+    Rental.belongsTo(models.User,         { foreignKey: 'userId',    as: 'user' });
+    Rental.belongsTo(models.Product,      { foreignKey: 'productId', as: 'product' });
+    Rental.belongsTo(models.RentalOrder,  { foreignKey: 'orderId',   as: 'order' }); // ← AJOUT ICI
   };
 
   return Rental;
