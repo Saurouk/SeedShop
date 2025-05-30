@@ -1,6 +1,6 @@
 const { Op } = require('sequelize');
-const db      = require('../models');
-const Rental  = db.Rental;
+const db = require('../models');
+const Rental = db.Rental;
 const Product = db.Product;
 
 /* =========================================================================
@@ -11,25 +11,29 @@ exports.createRental = async (req, res) => {
     const { productId, startDate, endDate } = req.body;
     const userId = req.user.id;
 
-    /* ─── 1-a  Vérifier le produit et qu’il est louable ─────────────────── */
+    // Vérifier le produit
     const product = await Product.findByPk(productId);
     if (!product || !product.isRentable) {
       return res.status(400).json({ message: 'Produit non louable ou introuvable.' });
     }
 
-    /* ─── 1-b  Vérifier la cohérence des dates ──────────────────────────── */
+    if (product.quantity <= 0) {
+      return res.status(400).json({ message: 'Stock insuffisant pour ce produit.' });
+    }
+
+    // Vérifier cohérence des dates
     if (!startDate || !endDate || new Date(endDate) <= new Date(startDate)) {
       return res.status(400).json({ message: 'Dates invalides.' });
     }
 
-    /* ─── 1-c  Vérifier le chevauchement sur la table Rental (pas Product) ─ */
+    // Vérifier le chevauchement
     const overlap = await Rental.findOne({
       where: {
         productId,
         status: { [Op.ne]: 'terminée' },
         [Op.and]: [
-          { startDate: { [Op.lte]: endDate   } },
-          { endDate:   { [Op.gte]: startDate } },
+          { startDate: { [Op.lte]: endDate } },
+          { endDate: { [Op.gte]: startDate } },
         ],
       },
     });
@@ -37,8 +41,12 @@ exports.createRental = async (req, res) => {
       return res.status(409).json({ message: 'Produit déjà loué sur cette période.' });
     }
 
-    /* ─── 1-d  Créer la location ────────────────────────────────────────── */
+    // Créer location
     const rental = await Rental.create({ userId, productId, startDate, endDate });
+
+    // Décrémenter le stock
+    product.quantity -= 1;
+    await product.save();
 
     res.status(201).json({ message: 'Location créée.', rental });
   } catch (error) {
@@ -48,7 +56,7 @@ exports.createRental = async (req, res) => {
 };
 
 /* =========================================================================
-   2.  Liste des locations de l’utilisateur – GET /rentals   (user connecté)
+   2.  Liste des locations de l’utilisateur – GET /rentals
    ======================================================================= */
 exports.getUserRentals = async (req, res) => {
   try {
@@ -69,7 +77,7 @@ exports.getUserRentals = async (req, res) => {
 };
 
 /* =========================================================================
-   3.  Détail d’une location – GET /rentals/:id        (user connecté)
+   3.  Détail d’une location – GET /rentals/:id
    ======================================================================= */
 exports.getRentalById = async (req, res) => {
   try {
@@ -91,7 +99,7 @@ exports.getRentalById = async (req, res) => {
 };
 
 /* =========================================================================
-   4.  Clôturer / rendre le produit – PUT /rentals/:id/close (user connecté)
+   4.  Clôturer une location – PUT /rentals/:id/close
    ======================================================================= */
 exports.closeRental = async (req, res) => {
   try {
@@ -100,27 +108,35 @@ exports.closeRental = async (req, res) => {
       include: {
         model: Product,
         as: 'product',
-        attributes: ['id', 'name', 'dailyRate'],
+        attributes: ['id', 'name', 'dailyRate', 'quantity'],
       },
     });
-    if (!rental)  return res.status(404).json({ message: 'Location introuvable.' });
+    if (!rental) return res.status(404).json({ message: 'Location introuvable.' });
     if (rental.status === 'terminée') {
       return res.status(400).json({ message: 'Location déjà terminée.' });
     }
 
-    /* ─── Calcul du retard éventuel ────────────────────────────────────── */
-    const today    = new Date();
-    const endDate  = new Date(rental.endDate);
-    const msInDay  = 1000 * 60 * 60 * 24;
+    // Calcul du retard (dates arrondies à 00:00)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const endDate = new Date(rental.endDate);
+    endDate.setHours(0, 0, 0, 0);
+
+    const msInDay = 1000 * 60 * 60 * 24;
     const lateDays = Math.max(0, Math.ceil((today - endDate) / msInDay));
 
     if (lateDays > 0) {
       const coef = parseFloat(process.env.LATE_FEE_MULTIPLIER || 1.5);
       rental.lateFee = lateDays * rental.product.dailyRate * coef;
-      rental.status  = 'retard';
+      rental.status = 'retard';
     } else {
-      rental.status  = 'terminée';
+      rental.status = 'terminée';
     }
+
+    // Incrémenter le stock
+    rental.product.quantity += 1;
+    await rental.product.save();
 
     await rental.save();
     res.status(200).json({ message: 'Location clôturée.', rental });
