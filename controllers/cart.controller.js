@@ -1,7 +1,9 @@
 const db = require('../models');
 const Cart = db.Cart;
 const Product = db.Product;
-const Category = db.Category;  
+const Category = db.Category;
+const SpecialOffer = db.SpecialOffer;
+const { Op } = require('sequelize');
 
 exports.getUserCart = async (req, res) => {
   try {
@@ -33,13 +35,11 @@ exports.addToCart = async (req, res) => {
     const userId = req.user.id;
     const { productId, quantity } = req.body;
 
-    // Vérifier que le produit existe
     const product = await Product.findByPk(productId);
     if (!product) {
       return res.status(404).json({ message: 'Produit introuvable.' });
     }
 
-    // Vérifier si le produit est déjà dans un autre panier
     const existingInOtherCart = await Cart.findOne({
       where: {
         productId,
@@ -50,20 +50,63 @@ exports.addToCart = async (req, res) => {
       return res.status(400).json({ message: 'Produit déjà dans un autre panier.' });
     }
 
-    // Vérifier si le produit est déjà dans le panier du user
-    const existingItem = await Cart.findOne({ where: { productId, userId } });
+    let cartItem = await Cart.findOne({ where: { productId, userId } });
 
-    if (existingItem) {
-      // Mettre à jour la quantité
-      existingItem.quantity += quantity;
-      await existingItem.save();
-      return res.status(200).json({ message: 'Quantité mise à jour dans le panier.', cartItem: existingItem });
+    if (cartItem) {
+      cartItem.quantity += quantity;
+      await cartItem.save();
+    } else {
+      cartItem = await Cart.create({ userId, productId, quantity });
     }
 
-    // Sinon, créer un nouvel item panier
-    const cartItem = await Cart.create({ userId, productId, quantity });
+    // Application d'une offre spéciale si applicable
+    const offers = await SpecialOffer.findAll({
+      where: {
+        active: true,
+        startDate: { [Op.lte]: new Date() },
+        endDate: { [Op.gte]: new Date() },
+      },
+      include: {
+        model: Product,
+        as: 'products',
+        where: { id: productId },
+      },
+    });
 
-    res.status(201).json({ message: 'Produit ajouté au panier.', cartItem });
+    for (const offer of offers) {
+      let isEligible = false;
+
+      if (offer.discountType === 'percentage' || offer.discountType === 'fixed') {
+        if (!offer.requiredQuantity || cartItem.quantity >= offer.requiredQuantity) {
+          isEligible = true;
+        }
+      } else if (offer.discountType === 'bundle') {
+        if (cartItem.quantity >= offer.requiredQuantity) {
+          isEligible = true;
+        }
+      }
+
+      if (isEligible) {
+        const price = product.price;
+        let discountAmount = 0;
+
+        if (offer.discountType === 'percentage') {
+          discountAmount = (price * offer.discountValue / 100) * cartItem.quantity;
+        } else if (offer.discountType === 'fixed') {
+          discountAmount = offer.discountValue * cartItem.quantity;
+        } else if (offer.discountType === 'bundle') {
+          discountAmount = 0; 
+        }
+
+        cartItem.specialOfferId = offer.id;
+        cartItem.discountAmount = discountAmount;
+        cartItem.discountedPrice = (price * cartItem.quantity) - discountAmount;
+        await cartItem.save();
+        break;
+      }
+    }
+
+    res.status(200).json({ message: cartItem._options.isNewRecord ? 'Produit ajouté au panier.' : 'Quantité mise à jour dans le panier.', cartItem });
   } catch (error) {
     console.error('Erreur ajout au panier :', error);
     res.status(500).json({ message: "Erreur lors de l'ajout au panier." });
