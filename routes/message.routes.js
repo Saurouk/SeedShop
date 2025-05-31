@@ -9,6 +9,9 @@ router.post('/', auth, messageController.sendMessage);
 // 📥 Récupérer les messages reçus
 router.get('/', auth, messageController.getInbox);
 
+// 🔍 Lire un message précis (et le marquer comme lu)
+router.get('/:id', auth, messageController.getMessageById);
+
 // ✅ Marquer comme lu
 router.patch('/:id/read', auth, messageController.markAsRead);
 

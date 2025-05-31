@@ -123,3 +123,30 @@ exports.replyToMessage = async (req, res) => {
     res.status(500).json({ message: "Erreur serveur." });
   }
 };
+
+// 🔸 Récupérer un message par ID + marquage comme lu
+exports.getMessageById = async (req, res) => {
+  const messageId = req.params.id;
+  const userId = req.user.id;
+
+  try {
+    const message = await Message.findOne({
+      where: { id: messageId, receiverId: userId },
+      include: [{ model: User, as: 'sender', attributes: ['id', 'username', 'email'] }]
+    });
+
+    if (!message) {
+      return res.status(404).json({ message: "Message introuvable ou accès refusé." });
+    }
+
+    if (!message.read) {
+      message.read = true;
+      await message.save();
+    }
+
+    res.status(200).json(message);
+  } catch (error) {
+    console.error("Erreur récupération message :", error);
+    res.status(500).json({ message: "Erreur serveur." });
+  }
+};
