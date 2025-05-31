@@ -31,6 +31,7 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     tableName: 'users',
     timestamps: true,
+    paranoid: true, // Active le soft delete via "deletedAt"
   });
 
   return User;

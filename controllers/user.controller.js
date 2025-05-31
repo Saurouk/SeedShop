@@ -86,3 +86,19 @@ exports.toggleNewsletter = async (req, res) => {
     res.status(500).json({ message: "Erreur serveur." });
   }
 };
+
+// ❌ Suppression douce (soft delete) d’un utilisateur
+exports.softDeleteUser = async (req, res) => {
+  const userId = req.params.id;
+
+  try {
+    const user = await User.findByPk(userId);
+    if (!user) return res.status(404).json({ message: "Utilisateur introuvable." });
+
+    await user.destroy(); // Soft delete (paranoid mode)
+    res.status(200).json({ message: "Utilisateur désactivé (soft delete)." });
+  } catch (error) {
+    console.error("Erreur suppression utilisateur :", error);
+    res.status(500).json({ message: "Erreur serveur." });
+  }
+};
