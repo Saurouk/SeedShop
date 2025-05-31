@@ -122,13 +122,28 @@ exports.downloadInvoice = async (req, res) => {
     doc.text(`Client ID: ${order.userId}`);
     doc.moveDown();
 
+    let totalBeforeDiscount = 0;
+    let totalDiscount = 0;
+
     doc.text('Produits :');
-    order.items.forEach(item => {
-      doc.text(`- ${item.product.name} x${item.quantity} @ ${item.priceAtPurchase.toFixed(2)} € = ${(item.priceAtPurchase * item.quantity).toFixed(2)} €`);
-    });
+    for (const item of order.items) {
+      const unitPrice = item.product.price;
+      const paidPrice = item.priceAtPurchase;
+      const discount = unitPrice - paidPrice;
+
+      totalBeforeDiscount += unitPrice * item.quantity;
+      totalDiscount += discount * item.quantity;
+
+      doc.text(`- ${item.product.name} x${item.quantity} @ ${unitPrice.toFixed(2)} € `
+        + `= ${(unitPrice * item.quantity).toFixed(2)} € `
+        + (discount > 0 ? `| Réduction : -${(discount * item.quantity).toFixed(2)} €` : '')
+      );
+    }
 
     doc.moveDown();
-    doc.fontSize(14).text(`Total : ${order.totalPrice.toFixed(2)} €`, { align: 'right' });
+    doc.text(`Sous-total avant remise : ${totalBeforeDiscount.toFixed(2)} €`);
+    doc.text(`Remises appliquées       : -${totalDiscount.toFixed(2)} €`);
+    doc.fontSize(14).text(`Total à payer           : ${order.totalPrice.toFixed(2)} €`, { align: 'right' });
 
     doc.end();
   } catch (error) {
