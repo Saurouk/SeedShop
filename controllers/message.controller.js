@@ -95,3 +95,31 @@ exports.markAsRead = async (req, res) => {
     res.status(500).json({ message: "Erreur serveur." });
   }
 };
+
+// 🔸 Répondre à un message existant
+exports.replyToMessage = async (req, res) => {
+  const senderId = req.user.id;
+  const originalMessageId = req.params.id;
+  const { subject, content, attachmentUrl } = req.body;
+
+  try {
+    const originalMessage = await Message.findByPk(originalMessageId);
+
+    if (!originalMessage) {
+      return res.status(404).json({ message: "Message original introuvable." });
+    }
+
+    const newMessage = await Message.create({
+      senderId,
+      receiverId: originalMessage.senderId,
+      subject: subject || `Re: ${originalMessage.subject}`,
+      content,
+      attachmentUrl
+    });
+
+    res.status(201).json({ message: "Réponse envoyée avec succès.", message: newMessage });
+  } catch (error) {
+    console.error("Erreur lors de la réponse au message :", error);
+    res.status(500).json({ message: "Erreur serveur." });
+  }
+};
