@@ -8,26 +8,21 @@ exports.register = async (req, res) => {
   const { username, email, password, role, newsletterOptIn } = req.body;
 
   try {
-    // Vérifie si l'email est déjà utilisé
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
       return res.status(400).json({ message: "Email déjà utilisé." });
     }
 
-    // Hash du mot de passe
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Validation du rôle
     const allowedRoles = ['user', 'admin', 'superuser'];
     const assignedRole = allowedRoles.includes(role) ? role : 'user';
 
-    // Création de l'utilisateur
     const user = await User.create({
       username,
       email,
       password: hashedPassword,
       role: assignedRole,
-      newsletterOptIn: !!newsletterOptIn // conversion en booléen
+      newsletterOptIn: !!newsletterOptIn
     });
 
     res.status(201).json({ message: "Utilisateur inscrit avec succès.", user });
@@ -42,7 +37,7 @@ exports.login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const user = await User.findOne({ where: { email } });
+    const user = await User.findOne({ where: { email, deletedAt: null } });
     if (!user) {
       return res.status(401).json({ message: "Email ou mot de passe incorrect." });
     }
@@ -87,7 +82,7 @@ exports.toggleNewsletter = async (req, res) => {
   }
 };
 
-// ❌ Suppression douce (soft delete) d’un utilisateur
+// ❌ Soft delete utilisateur
 exports.softDeleteUser = async (req, res) => {
   const userId = req.params.id;
 
@@ -95,10 +90,27 @@ exports.softDeleteUser = async (req, res) => {
     const user = await User.findByPk(userId);
     if (!user) return res.status(404).json({ message: "Utilisateur introuvable." });
 
-    await user.destroy(); // Soft delete (paranoid mode)
+    await user.destroy();
     res.status(200).json({ message: "Utilisateur désactivé (soft delete)." });
   } catch (error) {
-    console.error("Erreur suppression utilisateur :", error);
+    console.error("Erreur soft delete :", error);
+    res.status(500).json({ message: "Erreur serveur." });
+  }
+};
+
+// ✅ Réactiver un utilisateur soft-deleted
+exports.restoreUser = async (req, res) => {
+  const userId = req.params.id;
+
+  try {
+    const restored = await User.restore({ where: { id: userId } });
+    if (restored === 0) {
+      return res.status(404).json({ message: "Utilisateur non trouvé ou déjà actif." });
+    }
+
+    res.status(200).json({ message: "Utilisateur réactivé avec succès." });
+  } catch (error) {
+    console.error("Erreur restauration utilisateur :", error);
     res.status(500).json({ message: "Erreur serveur." });
   }
 };

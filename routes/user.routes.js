@@ -21,6 +21,9 @@ router.put('/newsletter/toggle', auth, userController.toggleNewsletter);
 // ❌ Supprimer (désactiver) un utilisateur (soft delete)
 router.delete('/:id', auth, userController.softDeleteUser);
 
+// ✅ Réactiver un utilisateur soft-supprimé
+router.patch('/:id/restore', auth, userController.restoreUser);
+
 // 🔧 Route TEMPORAIRE pour créer un admin/superuser
 const db = require('../models');
 const bcrypt = require('bcrypt');
