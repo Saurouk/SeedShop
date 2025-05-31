@@ -67,3 +67,25 @@ exports.getAllNewsletters = async (_req, res) => {
     res.status(500).json({ message: "Erreur serveur." });
   }
 };
+
+// Mettre à jour la préférence de newsletter (user)
+exports.updateNewsletterPreference = async (req, res) => {
+  const userId = req.user.id;
+  const { newsletterOptIn } = req.body;
+
+  try {
+    const user = await User.findByPk(userId);
+    if (!user) return res.status(404).json({ message: "Utilisateur introuvable." });
+
+    user.newsletterOptIn = !!newsletterOptIn;
+    await user.save();
+
+    res.status(200).json({
+      message: `Abonnement à la newsletter ${newsletterOptIn ? 'activé' : 'désactivé'}.`,
+      newsletterOptIn: user.newsletterOptIn
+    });
+  } catch (error) {
+    console.error("Erreur mise à jour newsletter :", error);
+    res.status(500).json({ message: "Erreur serveur." });
+  }
+};
