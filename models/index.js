@@ -37,7 +37,8 @@ db.Wishlist     = require('./wishlist.model')    (sequelize, DataTypes);
 db.Rental       = require('./rental.model')      (sequelize, DataTypes);
 db.RentalOrder  = require('./rentalOrder.model') (sequelize, DataTypes);
 db.Newsletter   = require('./newsletter.model')  (sequelize, DataTypes);
-db.Message      = require('./message.model')     (sequelize, DataTypes); 
+db.Message      = require('./message.model')     (sequelize, DataTypes);
+db.SpecialOffer = require('./specialOffer.model')(sequelize, DataTypes); // 🆕 Offres spéciales
 
 /* ===== Associations (appel une seule fois chacun) ===== */
 if (db.Product.associate)      db.Product.associate(db);
@@ -51,7 +52,8 @@ if (db.OrderItem.associate)    db.OrderItem.associate(db);
 if (db.Wishlist.associate)     db.Wishlist.associate(db);
 if (db.Rental.associate)       db.Rental.associate(db);
 if (db.RentalOrder.associate)  db.RentalOrder.associate(db);
-if (db.Message.associate)      db.Message.associate(db); 
+if (db.Message.associate)      db.Message.associate(db);
+if (db.SpecialOffer.associate) db.SpecialOffer.associate(db); // 🆕
 
 /* ===== Synchronisation ===== */
 db.sequelize.sync({ alter: true }).then(() => {

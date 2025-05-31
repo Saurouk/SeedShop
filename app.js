@@ -31,6 +31,7 @@ const testRoutes          = require('./routes/test.routes');         // ✅ Test
 const newsletterRoutes    = require('./routes/newsletter.routes');   // ✅ Newsletter
 const messageRoutes       = require('./routes/message.routes');      // ✅ Messages boîte de réception
 const contactRoutes       = require('./routes/contact.routes');      // ✅ Contact visiteurs
+const offerRoutes         = require('./routes/specialOffer.routes');
 
 /* ===== Montage des routes avec préfixes clairs ===== */
 app.use('/products',      productRoutes);
@@ -49,6 +50,7 @@ app.use('/test',          testRoutes);           // ✅ Notifications de test
 app.use('/newsletters',   newsletterRoutes);     // ✅ Newsletter
 app.use('/messages',      messageRoutes);        // ✅ Messages
 app.use('/contact',       contactRoutes);        // ✅ Contact visiteurs
+app.use('/offers',        offerRoutes);          // ✅ Offres spéciales
 
 /* ===== Tâches Cron ===== */
 statusUpdater.start(); // ✅ Inclut update + notification de rappel
