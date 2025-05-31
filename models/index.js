@@ -23,20 +23,21 @@ const db = {};
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
-db.User         = require('./user.model')       (sequelize, DataTypes);
-db.Category     = require('./category.model')   (sequelize, DataTypes);
-db.Product      = require('./product.model')    (sequelize, DataTypes);
-db.Blog         = require('./blog.model')       (sequelize, DataTypes);
-db.Comment      = require('./comment.model')    (sequelize, DataTypes);
-db.Like         = require('./like.model')       (sequelize, DataTypes);
-db.Report       = require('./report.model')     (sequelize, DataTypes);
-db.Cart         = require('./cart.model')       (sequelize, DataTypes);
-db.Order        = require('./order.model')      (sequelize, DataTypes);
-db.OrderItem    = require('./orderItem.model')  (sequelize, DataTypes);
-db.Wishlist     = require('./wishlist.model')   (sequelize, DataTypes);
-db.Rental       = require('./rental.model')     (sequelize, DataTypes);
-db.RentalOrder  = require('./rentalOrder.model')(sequelize, DataTypes);
-db.Newsletter   = require('./newsletter.model') (sequelize, DataTypes); // ✅ Newsletter ajoutée
+db.User         = require('./user.model')        (sequelize, DataTypes);
+db.Category     = require('./category.model')    (sequelize, DataTypes);
+db.Product      = require('./product.model')     (sequelize, DataTypes);
+db.Blog         = require('./blog.model')        (sequelize, DataTypes);
+db.Comment      = require('./comment.model')     (sequelize, DataTypes);
+db.Like         = require('./like.model')        (sequelize, DataTypes);
+db.Report       = require('./report.model')      (sequelize, DataTypes);
+db.Cart         = require('./cart.model')        (sequelize, DataTypes);
+db.Order        = require('./order.model')       (sequelize, DataTypes);
+db.OrderItem    = require('./orderItem.model')   (sequelize, DataTypes);
+db.Wishlist     = require('./wishlist.model')    (sequelize, DataTypes);
+db.Rental       = require('./rental.model')      (sequelize, DataTypes);
+db.RentalOrder  = require('./rentalOrder.model') (sequelize, DataTypes);
+db.Newsletter   = require('./newsletter.model')  (sequelize, DataTypes);
+db.Message      = require('./message.model')     (sequelize, DataTypes); // ✅ Ajouté
 
 /* ===== Associations (appel une seule fois chacun) ===== */
 if (db.Product.associate)      db.Product.associate(db);
@@ -50,7 +51,7 @@ if (db.OrderItem.associate)    db.OrderItem.associate(db);
 if (db.Wishlist.associate)     db.Wishlist.associate(db);
 if (db.Rental.associate)       db.Rental.associate(db);
 if (db.RentalOrder.associate)  db.RentalOrder.associate(db);
-// Pas d'association nécessaire pour Newsletter pour l’instant
+if (db.Message.associate)      db.Message.associate(db); // ✅ Ajouté
 
 /* ===== Synchronisation ===== */
 db.sequelize.sync({ alter: true }).then(() => {
