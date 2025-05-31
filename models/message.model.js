@@ -5,6 +5,10 @@ module.exports = (sequelize, DataTypes) => {
     content: { type: DataTypes.TEXT, allowNull: false },
     attachmentUrl: { type: DataTypes.STRING, allowNull: true }, // pour PDF ou autre fichier
     read: { type: DataTypes.BOOLEAN, defaultValue: false },
+
+    // Champs pour messages envoyés par des visiteurs non inscrits
+    visitorName: { type: DataTypes.STRING, allowNull: true },
+    visitorEmail: { type: DataTypes.STRING, allowNull: true },
   }, {
     tableName: 'messages',
     timestamps: true,

@@ -3,6 +3,9 @@ const router = express.Router();
 const messageController = require('../controllers/message.controller');
 const auth = require('../middleware/auth');
 
+// 🌐 Formulaire de contact visiteur
+router.post('/contact', messageController.sendContactMessage);
+
 // 📩 Envoyer un message (admin ↔ user)
 router.post('/', auth, messageController.sendMessage);
 

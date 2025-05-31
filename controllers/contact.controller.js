@@ -134,6 +134,21 @@ exports.replyToMessage = async (req, res) => {
       attachmentUrl
     });
 
+    const receiver = await User.findByPk(originalMessage.senderId);
+
+    console.log("📬 Envoi mail à :", receiver?.email);
+
+    if (receiver && receiver.email) {
+      await sendEmail(
+        receiver.email,
+        `Nouvelle réponse à votre message : ${originalMessage.subject}`,
+        `<p>Bonjour ${receiver.username},</p>
+         <p>Vous avez reçu une réponse à votre message : <strong>${originalMessage.subject}</strong>.</p>
+         <p>Message : ${content}</p>
+         <p>— L'équipe SeedShop</p>`
+      );
+    }
+
     res.status(201).json({ message: "Réponse envoyée avec succès.", message: newMessage });
   } catch (error) {
     console.error("Erreur lors de la réponse au message :", error);
