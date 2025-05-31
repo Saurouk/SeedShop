@@ -9,6 +9,9 @@ router.post('/', auth, orderController.createOrder);
 // Récupérer toutes les commandes de l'utilisateur connecté
 router.get('/', auth, orderController.getUserOrders);
 
+// 🔍 Prévisualiser une commande avec application des offres spéciales
+router.get('/preview', auth, orderController.previewOrder);
+
 // Télécharger la facture PDF d'une commande
 router.get('/:id/invoice', auth, orderController.downloadInvoice);
 

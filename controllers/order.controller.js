@@ -4,31 +4,49 @@ const Order = db.Order;
 const OrderItem = db.OrderItem;
 const Cart = db.Cart;
 const Product = db.Product;
+const SpecialOffer = db.SpecialOffer;
 
 exports.createOrder = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    // Récupérer les items du panier de l'utilisateur
     const cartItems = await Cart.findAll({ where: { userId } });
     if (cartItems.length === 0) {
       return res.status(400).json({ message: "Panier vide, impossible de créer la commande." });
     }
 
-    // Calculer le total
     let totalPrice = 0;
     for (const item of cartItems) {
-      const product = await Product.findByPk(item.productId);
+      const product = await Product.findByPk(item.productId, {
+        include: { model: SpecialOffer, as: 'specialOffers', through: { attributes: [] } },
+      });
+
       if (!product) {
         return res.status(400).json({ message: `Produit ID ${item.productId} introuvable.` });
       }
-      totalPrice += product.price * item.quantity;
+
+      let baseSubtotal = product.price * item.quantity;
+      let discount = 0;
+
+      for (const offer of product.specialOffers || []) {
+        const now = new Date();
+        const isActive = offer.active && (!offer.startDate || offer.startDate <= now) && (!offer.endDate || offer.endDate >= now);
+
+        if (!isActive) continue;
+
+        if (offer.discountType === 'percentage' && item.quantity >= offer.requiredQuantity) {
+          discount = Math.max(discount, (offer.discountValue / 100) * baseSubtotal);
+        } else if ((offer.discountType === 'fixed' || offer.discountType === 'bundle') && item.quantity >= offer.requiredQuantity) {
+          discount = Math.max(discount, offer.discountValue);
+        }
+      }
+
+      const subtotalAfterDiscount = baseSubtotal - discount;
+      totalPrice += subtotalAfterDiscount;
     }
 
-    // Créer la commande
     const order = await Order.create({ userId, totalPrice });
 
-    // Créer les orderItems
     for (const item of cartItems) {
       const product = await Product.findByPk(item.productId);
       await OrderItem.create({
@@ -39,7 +57,6 @@ exports.createOrder = async (req, res) => {
       });
     }
 
-    // Vider le panier de l'utilisateur
     await Cart.destroy({ where: { userId } });
 
     res.status(201).json({ message: 'Commande créée avec succès.', orderId: order.id });
@@ -142,5 +159,81 @@ exports.cancelOrder = async (req, res) => {
   } catch (error) {
     console.error('Erreur annulation commande :', error);
     res.status(500).json({ message: "Erreur lors de l'annulation de la commande." });
+  }
+};
+
+exports.previewOrder = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const cartItems = await Cart.findAll({
+      where: { userId },
+      include: {
+        model: Product,
+        as: 'product',
+        include: {
+          model: SpecialOffer,
+          as: 'specialOffers',
+          through: { attributes: [] },
+        },
+      },
+    });
+
+    let totalBeforeDiscount = 0;
+    let totalDiscount = 0;
+
+    const detailedItems = [];
+
+    for (const item of cartItems) {
+      const { product, quantity } = item;
+      const unitPrice = product.price;
+      const baseSubtotal = quantity * unitPrice;
+
+      let bestDiscount = 0;
+
+      for (const offer of product.specialOffers || []) {
+        const now = new Date();
+
+        const isActive =
+          offer.active &&
+          (!offer.startDate || offer.startDate <= now) &&
+          (!offer.endDate || offer.endDate >= now);
+
+        if (!isActive) continue;
+
+        if (offer.discountType === 'percentage' && quantity >= offer.requiredQuantity) {
+          bestDiscount = Math.max(bestDiscount, (offer.discountValue / 100) * baseSubtotal);
+        } else if ((offer.discountType === 'fixed' || offer.discountType === 'bundle') && quantity >= offer.requiredQuantity) {
+          bestDiscount = Math.max(bestDiscount, offer.discountValue);
+        }
+      }
+
+      const subtotalAfterDiscount = baseSubtotal - bestDiscount;
+
+      totalBeforeDiscount += baseSubtotal;
+      totalDiscount += bestDiscount;
+
+      detailedItems.push({
+        productId: product.id,
+        name: product.name,
+        unitPrice,
+        quantity,
+        subtotal: baseSubtotal,
+        discount: bestDiscount,
+        total: subtotalAfterDiscount,
+      });
+    }
+
+    const totalAfterDiscount = totalBeforeDiscount - totalDiscount;
+
+    res.status(200).json({
+      items: detailedItems,
+      totalBeforeDiscount,
+      totalDiscount,
+      totalAfterDiscount,
+    });
+  } catch (error) {
+    console.error("Erreur prévisualisation commande :", error);
+    res.status(500).json({ message: "Erreur serveur." });
   }
 };
