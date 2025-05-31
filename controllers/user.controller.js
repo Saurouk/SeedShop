@@ -134,3 +134,22 @@ exports.softDeleteOwnAccount = async (req, res) => {
     res.status(500).json({ message: "Erreur serveur." });
   }
 };
+
+// 🔎 Obtenir le statut du compte connecté
+exports.getAccountStatus = async (req, res) => {
+  try {
+    const user = await User.findByPk(req.user.id, { paranoid: false });
+    if (!user) {
+      return res.status(404).json({ status: "inconnu", message: "Utilisateur non trouvé." });
+    }
+
+    const isDeleted = !!user.deletedAt;
+    res.status(200).json({
+      status: isDeleted ? "désactivé" : "actif",
+      message: `Votre compte est ${isDeleted ? "désactivé" : "actif"}.`
+    });
+  } catch (error) {
+    console.error("Erreur récupération statut utilisateur :", error);
+    res.status(500).json({ message: "Erreur serveur." });
+  }
+};

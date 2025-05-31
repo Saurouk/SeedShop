@@ -21,6 +21,9 @@ router.put('/newsletter/toggle', auth, userController.toggleNewsletter);
 // ❌ Un utilisateur peut supprimer son propre compte (soft delete)
 router.delete('/me', auth, userController.softDeleteOwnAccount);
 
+// ✅ Vérifier le statut du compte (actif ou désactivé)
+router.get('/me/status', auth, userController.getAccountStatus);
+
 // ❌ Supprimer (désactiver) un utilisateur (soft delete)
 router.delete('/:id', auth, userController.softDeleteUser);
 
