@@ -90,6 +90,12 @@ exports.softDeleteUser = async (req, res) => {
     const user = await User.findByPk(userId);
     if (!user) return res.status(404).json({ message: "Utilisateur introuvable." });
 
+    if (user.role === 'superuser') {
+      return res.status(403).json({
+        message: "Impossible de supprimer un superuser."
+      });
+    }
+
     await user.destroy();
     res.status(200).json({ message: "Utilisateur désactivé (soft delete)." });
   } catch (error) {
@@ -123,6 +129,12 @@ exports.softDeleteOwnAccount = async (req, res) => {
       return res.status(404).json({ message: "Utilisateur non trouvé." });
     }
 
+    if (user.role === 'admin' || user.role === 'superuser') {
+      return res.status(403).json({
+        message: "Les administrateurs ne peuvent pas supprimer leur propre compte."
+      });
+    }
+
     if (user.deletedAt !== null) {
       return res.status(400).json({ message: "Votre compte est déjà désactivé." });
     }
@@ -136,7 +148,7 @@ exports.softDeleteOwnAccount = async (req, res) => {
 };
 
 // 🔎 Obtenir le statut du compte connecté
-exports.getAccountStatus = async (req, res) => {
+exports.getUserStatus = async (req, res) => {
   try {
     const user = await User.findByPk(req.user.id, { paranoid: false });
     if (!user) {

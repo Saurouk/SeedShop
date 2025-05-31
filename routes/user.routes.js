@@ -22,9 +22,9 @@ router.put('/newsletter/toggle', auth, userController.toggleNewsletter);
 router.delete('/me', auth, userController.softDeleteOwnAccount);
 
 // ✅ Vérifier le statut du compte (actif ou désactivé)
-router.get('/me/status', auth, userController.getAccountStatus);
+router.get('/me/status', auth, userController.getUserStatus);
 
-// ❌ Supprimer (désactiver) un utilisateur (soft delete)
+// ❌ Supprimer (désactiver) un utilisateur (soft delete - par admin)
 router.delete('/:id', auth, userController.softDeleteUser);
 
 // ✅ Réactiver un utilisateur soft-supprimé
