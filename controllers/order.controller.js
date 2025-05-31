@@ -5,7 +5,7 @@ const OrderItem = db.OrderItem;
 const Cart = db.Cart;
 const Product = db.Product;
 const SpecialOffer = db.SpecialOffer;
-// 📝 Modification mineure pour forcer un nouveau commit
+
 
 exports.createOrder = async (req, res) => {
   try {
