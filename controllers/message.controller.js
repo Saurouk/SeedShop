@@ -1,6 +1,7 @@
 const db = require('../models');
 const Message = db.Message;
 const User = db.User;
+const { sendEmail } = require('../services/email.service');
 
 // 🔸 Envoyer un message (admin ou user)
 exports.sendMessage = async (req, res) => {
@@ -40,6 +41,22 @@ exports.sendMessage = async (req, res) => {
       content: finalContent,
       attachmentUrl
     });
+
+    // ✅ Envoi de l'email de confirmation
+    const sender = await User.findByPk(senderId);
+    if (sender && sender.email) {
+      console.log("📧 Envoi d’un mail à :", sender.email);
+      await sendEmail(
+        sender.email,
+        "Confirmation de réception de votre message",
+        `<p>Bonjour ${sender.username},</p>
+         <p>Nous avons bien reçu votre message concernant : <strong>${finalSubject}</strong>.</p>
+         <p>Nous vous répondrons dans les plus brefs délais.</p>
+         <p>— L'équipe SeedShop</p>`
+      );
+    } else {
+      console.warn("❌ Email du sender manquant, envoi ignoré.");
+    }
 
     res.status(201).json({ message: "Message envoyé avec succès.", message });
   } catch (error) {
