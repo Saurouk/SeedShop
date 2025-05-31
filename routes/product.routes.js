@@ -20,7 +20,15 @@ router.put(
   '/:id',
   auth,
   authorize('admin', 'superuser'),
-  productController.updateProduct           
+  productController.updateProduct
+);
+
+/* ❌ Suppression d’un produit (admin ou superuser) */
+router.delete(
+  '/:id',
+  auth,
+  authorize('admin', 'superuser'),
+  productController.deleteProduct
 );
 
 module.exports = router;
