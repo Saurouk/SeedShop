@@ -66,6 +66,14 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: 'productId',
       as: 'rentals',
     });
+
+    /* ⇾ Offres spéciales */
+    Product.belongsToMany(models.SpecialOffer, {
+      through: 'SpecialOfferProduct',
+      foreignKey: 'productId',
+      otherKey: 'specialOfferId',
+      as: 'specialOffers',
+    });
   };
 
   return Product;

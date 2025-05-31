@@ -13,4 +13,7 @@ router.get('/', controller.getAllOffers);
 // 🔧 Activer / désactiver une offre
 router.patch('/:id/toggle', auth, authorize('admin', 'superuser'), controller.toggleOffer);
 
+// 🔗 Associer un produit à une offre spéciale
+router.post('/:id/add-product', auth, authorize('admin', 'superuser'), controller.addProductToOffer);
+
 module.exports = router;

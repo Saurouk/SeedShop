@@ -68,3 +68,28 @@ exports.toggleOffer = async (req, res) => {
     res.status(500).json({ message: "Erreur serveur." });
   }
 };
+
+// 🔗 Ajouter un produit à une offre existante
+exports.addProductToOffer = async (req, res) => {
+  const offerId = req.params.id;
+  const { productId } = req.body;
+
+  try {
+    const offer = await SpecialOffer.findByPk(offerId);
+    if (!offer) {
+      return res.status(404).json({ message: 'Offre introuvable.' });
+    }
+
+    const product = await Product.findByPk(productId);
+    if (!product) {
+      return res.status(404).json({ message: 'Produit introuvable.' });
+    }
+
+    await offer.addProduct(product);
+
+    res.status(200).json({ message: 'Produit ajouté à l’offre avec succès.' });
+  } catch (error) {
+    console.error('Erreur ajout produit à l’offre :', error);
+    res.status(500).json({ message: 'Erreur serveur.' });
+  }
+};
