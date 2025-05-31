@@ -18,6 +18,9 @@ router.get('/profile', auth, (req, res) => {
 // 🔄 S'abonner / se désabonner de la newsletter
 router.put('/newsletter/toggle', auth, userController.toggleNewsletter);
 
+// ❌ Un utilisateur peut supprimer son propre compte (soft delete)
+router.delete('/me', auth, userController.softDeleteOwnAccount);
+
 // ❌ Supprimer (désactiver) un utilisateur (soft delete)
 router.delete('/:id', auth, userController.softDeleteUser);
 

@@ -82,7 +82,7 @@ exports.toggleNewsletter = async (req, res) => {
   }
 };
 
-// ❌ Soft delete utilisateur
+// ❌ Soft delete utilisateur (admin)
 exports.softDeleteUser = async (req, res) => {
   const userId = req.params.id;
 
@@ -111,6 +111,26 @@ exports.restoreUser = async (req, res) => {
     res.status(200).json({ message: "Utilisateur réactivé avec succès." });
   } catch (error) {
     console.error("Erreur restauration utilisateur :", error);
+    res.status(500).json({ message: "Erreur serveur." });
+  }
+};
+
+// ❌ Soft delete par l'utilisateur lui-même
+exports.softDeleteOwnAccount = async (req, res) => {
+  try {
+    const user = await User.findByPk(req.user.id, { paranoid: false });
+    if (!user) {
+      return res.status(404).json({ message: "Utilisateur non trouvé." });
+    }
+
+    if (user.deletedAt !== null) {
+      return res.status(400).json({ message: "Votre compte est déjà désactivé." });
+    }
+
+    await user.destroy();
+    res.status(200).json({ message: "Votre compte a été désactivé avec succès." });
+  } catch (error) {
+    console.error("Erreur désactivation par l'utilisateur :", error);
     res.status(500).json({ message: "Erreur serveur." });
   }
 };
