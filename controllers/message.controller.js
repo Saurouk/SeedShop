@@ -18,16 +18,11 @@ exports.sendMessage = async (req, res) => {
   try {
     let receiver = null;
 
-    // 🔍 1. ReceiverId explicite
     if (receiverId) {
       receiver = await User.findByPk(receiverId);
-    }
-    // 🔍 2. ReceiverEmail explicite
-    else if (receiverEmail) {
+    } else if (receiverEmail) {
       receiver = await User.findOne({ where: { email: receiverEmail } });
-    }
-    // 🔍 3. Fallback admin
-    else {
+    } else {
       receiver = await User.findOne({ where: { role: 'admin' } });
     }
 
@@ -58,8 +53,14 @@ exports.getInbox = async (req, res) => {
   const userId = req.user.id;
 
   try {
+    const filter = { receiverId: userId };
+
+    if (req.query.read === 'false') {
+      filter.read = false;
+    }
+
     const messages = await Message.findAll({
-      where: { receiverId: userId },
+      where: filter,
       include: [{ model: User, as: 'sender', attributes: ['id', 'username', 'email'] }],
       order: [['createdAt', 'DESC']]
     });
